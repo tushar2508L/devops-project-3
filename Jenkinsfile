@@ -3,16 +3,21 @@ pipeline {
 
     stages {
 
-        stage('Welcome') {
+        stage('Clone Complete') {
             steps {
-                echo 'Hello DevOps'
+                echo 'Repository downloaded successfully.'
             }
         }
 
-        stage('List Files') {
+        stage('Build Docker Image') {
             steps {
-                sh 'pwd'
-                sh 'ls -la'
+                sh 'docker build -t project3-demo .'
+            }
+        }
+
+        stage('Show Docker Images') {
+            steps {
+                sh 'docker images'
             }
         }
 
