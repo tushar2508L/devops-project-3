@@ -2,14 +2,15 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "tushar25l/devops-project-3"
+        IMAGE_NAME = "tushar25l/devops-project-3:${BUILD_NUMBER}"
+        K8S_SERVER = "3.110.166.151"
     }
 
     stages {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:$BUILD_NUMBER .'
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
@@ -25,11 +26,23 @@ pipeline {
             }
         }
 
-        stage('Push Image') {
+        stage('Push Docker Image') {
             steps {
-                sh 'docker push $IMAGE_NAME:$BUILD_NUMBER'
+                sh 'docker push $IMAGE_NAME'
             }
         }
 
+        stage('Deploy to Kubernetes') {
+            steps {
+                sshagent(credentials: ['kubernetes-ssh']) {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no ubuntu@${K8S_SERVER} '
+                    kubectl set image deployment/project4 project4=${IMAGE_NAME} -n project4
+                    kubectl rollout status deployment/project4 -n project4
+                    '
+                    """
+                }
+            }
+        }
     }
 }
